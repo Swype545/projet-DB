@@ -14,14 +14,16 @@ def playerGoldOver(limitPO):
 	if((type(limitPO) == float) or (type(limitPO) == int)):
 		i = 0
 	else:
-		return "Les parametres entres doivent etre des floats."
+		print("Les parametres entres doivent etre des floats.")
+		return 0
 
 
 	#On recupere l'ensemble des connections
 	try:
 		collections = db.collection_names(include_system_collections=False)
 	except:
-		return "Impossible de trouver les collections."
+		print("Impossible de trouver les collections.")
+		return 0
 	playersList = []
 
 	#On boucle sur toutes les collections
@@ -31,13 +33,14 @@ def playerGoldOver(limitPO):
 			for player in db[collection].find({"argent":{ "$gt": limitPO} }):
 				playersList.append(player)
 	except:
-		return "Erreur lors de la requete de connection aux collections"
+		print("Erreur lors de la requete de connection aux collections")
+		return 0
 
 	if(len(playersList) > 0):
 		return playersList
 	else:
-		return "Aucun joueur ne possede plus de cette somme."
-
+		print("Aucun joueur ne possede plus de cette somme.")
+		return 0
 
 #Seconde requete: recuperer une liste de personnage qui ont le metier "job" et qui peuvent creer "recipe"
 def hasRecipeInJob(job, recipe):
@@ -68,80 +71,6 @@ def hasRecipeInJob(job, recipe):
 	else:
 		return "Aucun joueur ne possede cette recette."
 
-#Troisieme requete: constituer un groupe ayant un ilvl plus grand que "sommeilvl" avec des pourcentage donnes
-'''def findGroup5(sommeilvl, pourcentmage, pourcentguerrier,pourcentpretre, pourcentvoleur):
-	
-	if(pourcentmage+pourcentguerrier+pourcentpretre+pourcentvoleur != 1):
-		return "Il faut que la somme des pourcentage donne 1."
-
-	if((type(sommeilvl) == float) or (type(sommeilvl) == int)):
-		i = 0
-	else:
-		return "Les parametres entres doivent etre des floats."
-
-	if((type(pourcentmage) != float) or (type(pourcentguerrier) != float) or (type(pourcentpretre) != float) or (type(pourcentvoleur) != float)):
-		return "Les parametres entres doivent etre des floats."
-
-	#On cree la liste qui comprendra le groupe
-	party_mage = []
-	party_guerrier = []
-	party_pretre = []
-	party_voleur = []
-	#On cree une variable ilvl du groupe. De base, elle est initialisee a 0.
-	ilvl_party= 0
-
-	mages = []
-	guerriers = []
-	pretres = []
-	voleurs = []
-	
-	try:
-		collections = db.collection_names(include_system_collections=False)
-	except:
-		return "Impossible de trouver les collections."
-
-
-	try:
-		for collection in collections:
-			#On boucle sur tout les joueurs dans la collection donnee
-			print(collection)
-			for player in db[collection].find({"niveau":110}):
-				if(collection == "mage"):
-					mages.append(player)
-				if(collection == "guerrier"):
-					guerriers.append(player)
-				if(collection == "pretre"):
-					pretres.append(player)
-				if(collection == "voleur"): 
-					voleurs.append(player)
-	except:
-		return "Erreur lors de la requete de connection aux collections"
-
-	for player in mages:
-		if(pourcentmage*5 > len(party_mage)):
-			party_mage.append(player)
-			ilvl_party += player["ilvl"]
-			print(ilvl_party)
-			mages.remove(player)
-
-
-	#print(mages, guerriers, pretres, voleurs)
-
-
-	db.mage.find_one({"ilvl": {"$gt":800}})
-	db.guerrier.find_one({"ilvl":{"$gt":((800+"$ilvl")/2)}})
-
-
-
-	db.guerrier.aggregate({
-		"$project":{
-			"moyenne":{
-				"$multiply":[("$add":[800, "$ilvl"]), (1/2)]
-			}
-		}
-	})'''
-
-	
 #Troisieme fonction: realiser un groupe constitue de tanks, de dps, de heal avec un niveau d'objet (ilvl) minimum donne en parametres
 def createGroup(limitTank, limitHeal, limitDps):
 	
@@ -149,23 +78,27 @@ def createGroup(limitTank, limitHeal, limitDps):
 	if((type(limitTank) == float) or (type(limitTank) == int)):
 		i = 0
 	else:
-		return "Les parametres entres doivent etre des floats."
+		print("Les parametres entres doivent etre des floats.")
+		return 0
 	
 	if((type(limitHeal) == float) or (type(limitHeal) == int)):
 		i = 0
 	else:
-		return "Les parametres entres doivent etre des floats."
+		print("Les parametres entres doivent etre des floats.")
+		return 0
 	
 	if((type(limitDps) == float) or (type(limitDps) == int)):
 		i = 0
 	else:
-		return "Les parametres entres doivent etre des floats."
+		print("Les parametres entres doivent etre des floats.")
+		return 0
 	
 	#On recupere l'ensemble des collections de la db
 	try:
 		collections = db.collection_names(include_system_collections=False)
 	except:
-		return "Impossible de trouver les collections."
+		print("Impossible de trouver les collections.")
+		return 0
 	
 	#On initialise le groupe
 	party = {
@@ -192,7 +125,8 @@ def createGroup(limitTank, limitHeal, limitDps):
 				party['tank'].append(player)
 		
 	if(party['tankTotilvl'] < limitTank):
-		return "pas assez de tank disponible dans la DB"
+		print("pas assez de tank disponible dans la DB")
+		return 0
 
 	
 	#Recupere les HEALS
@@ -205,7 +139,8 @@ def createGroup(limitTank, limitHeal, limitDps):
 				party['heal'].append(player)
 	
 	if(party['healTotilvl'] < limitHeal):
-		return "pas assez de heal disponible dans la DB"
+		print("pas assez de heal disponible dans la DB")
+		return 0
 	
 	#Recupere les DPS (soit guerrier arme, soit mage, soit voleur)
 	#Array tampon
@@ -224,39 +159,50 @@ def createGroup(limitTank, limitHeal, limitDps):
 	
 	while(party['dpsTotilvl'] < limitDps):
 		add = 0
-		if(len(guerriersDPS) >= add+1):
+
+		#On verifie qu'il y'a encore des personnages dans l'array
+		if(len(guerriersDPS) >= 1):
 			if(party['dpsTotilvl'] < limitDps):
 				#Verification de la presence de l'ilvl dans "player" avant l'ajout
 				if("ilvl" in guerrierDPS[add]):
 					party['dps'].append(guerriersDPS[add])
 					party['dpsTotilvl'] += guerriersDPS[add]["ilvl"]
+					del guerriersDPS[add]
 
 			else:
 				#On break si plus de place en DPS
 				break
 		
-		if(len(magesDPS) >= add+1):
+		if(len(magesDPS) >= 1):
 			if(party['dpsTotilvl'] < limitDps):
 				#Verification de la presence de l'ilvl dans "player" avant l'ajout
 				if("ilvl" in magesDPS[add]):
 					party['dps'].append(magesDPS[add])
 					party['dpsTotilvl'] += magesDPS[add]["ilvl"]
+					del magesDPS[add]
 			else:
 				break
 				
-		if(len(voleursDPS) >= add+1):
+		if(len(voleursDPS) >= 1):
 			if(party['dpsTotilvl'] < limitDps):
 				#Verification de la presence de l'ilvl dans "player" avant l'ajout
 				if("ilvl" in voleursDPS[add]):
 					party['dps'].append(voleursDPS[add])
 					party['dpsTotilvl'] += voleursDPS[add]["ilvl"]
+					del voleursDPS[add]
 			else:
 				break
 		
 		add += 1
-	
+		
+		#S'il n'y a plus assez de DPS pour former le groupe, on break, et on affichera un message d'erreur.
+		if( (len(guerriersDPS) == 0) and (len(magesDPS) == 0) and (len(voleursDPS) == 0)):
+			break 
+
+
 	if(party['dpsTotilvl'] < limitDps):
-		return "pas assez de DPS disponible dans la DB"
+		print("pas assez de DPS disponible dans la DB")
+		return 0
 	
 	
 	return party
@@ -413,39 +359,44 @@ if __name__ == "__main__":
     #pprint.pprint(playerGoldOver(2000))
 
     print("Recuperation des personnages avec plus de 2000 pieces d'or... (affichage des noms uniquement)")
-    for player in playerGoldOver(2000):
-    	print(player["nom"])
+    value = playerGoldOver(20000)
+    if (value != 0):
+	    for player in value:
+	    	print(player["nom"])
 
     print("---------------------------------------------------\n")
 
     #Commande qui renvoit les personnages en entier (l'ensemble du dictionnaire):
     #pprint.pprint(hasRecipeInJob('alchimiste','potion de mana'))
     print("Recuperation des personnages etant 'alchimiste' avec la recette 'potion de mana'... (affichage des noms uniquement)")
-    for player in hasRecipeInJob('alchimiste','potion de mana'):
-    	print(player["nom"])
+    value = hasRecipeInJob('alchimiste','potion de mana')
+    if(value != 0):
+	    for player in value:
+	    	print(player["nom"])
 
     print("---------------------------------------------------\n")
 
     #Commande qui renvoit les personnages en entier (l'ensemble du dictionnaire):
     #pprint.pprint(createGroup(800,800,1000))
     print("Creation d'un groupe de personnes avec un niveau d'objet minimum de 800 pour les tanks, 800 pour les heals et 1000 pour les dps... (affichage des noms uniquement)")
-    newgroup = createGroup(800,800,1000)
-    print(" ")
+    newgroup = createGroup(800,800,1800)
+    if(newgroup != 0):
+	    print(" ")
 
-    print("Tank:")
-    print("----")
-    for tank in newgroup["tank"]:
-    	print(tank["nom"])
-    print(" ")
+	    print("Tank:")
+	    print("----")
+	    for tank in newgroup["tank"]:
+	    	print(tank["nom"])
+	    print(" ")
 
-    print("Heal:")
-    print("----")
-    for heal in newgroup["heal"]:
-    	print(heal["nom"])
-    print(" ")
+	    print("Heal:")
+	    print("----")
+	    for heal in newgroup["heal"]:
+	    	print(heal["nom"])
+	    print(" ")
 
-    print("Dps:")
-    print("----")
-    for dps in newgroup["dps"]:
-    	print(dps["nom"])
-    print(" ")
+	    print("Dps:")
+	    print("----")
+	    for dps in newgroup["dps"]:
+	    	print(dps["nom"])
+	    print(" ")
