@@ -142,7 +142,7 @@ def hasRecipeInJob(job, recipe):
 	})'''
 
 	
-#Troisieme fonction: realiser un groupe constitué de tanks, de dps, de heal avec un niveau d'objet (ilvl) minimum donne en parametres
+#Troisieme fonction: realiser un groupe constitue de tanks, de dps, de heal avec un niveau d'objet (ilvl) minimum donne en parametres
 def createGroup(limitTank, limitHeal, limitDps):
 	
 	#Gestion d'erreur
@@ -173,31 +173,36 @@ def createGroup(limitTank, limitHeal, limitDps):
 		"heal":[],
 		"dps":[],
 		
-		"tankTotilvl" = 0,
-		"healTotilvl" = 0,
-		"dpsTotilvl" = 0
+		"tankTotilvl": 0,
+		"healTotilvl": 0,
+		"dpsTotilvl": 0
 	}
 	
 	#On realise les requetes pour recuperer les infos
 	#Recuperer les TANKS
 	
-	for player in db[guerriers].find({"$and": [{"specialisation":"protection"}, {"niveau":110}):
+	for player in db.guerrier.find({"$and": [{"specialisation":"protection"}, {"niveau":110}]}):
 
 		#Si la limite de niveau d'objet n'est pas atteinte
 		if(party['tankTotilvl'] < limitTank):
-			party['tank'].append(player)
-			party['tankTotilvl'] += player["ilvl"]
+			#On check s'il a un ilvl definit (verification). Si non, il n'est pas comptabilise
+			if("ilvl" in player):
+				party['tankTotilvl'] += player["ilvl"]
+				#On ajoute le joueur a l'array "tank"
+				party['tank'].append(player)
 		
 	if(party['tankTotilvl'] < limitTank):
 		return "pas assez de tank disponible dans la DB"
 
 	
 	#Recupere les HEALS
-	for player in db[pretre].find({"$and": [{"specialisation":"Sacre"}, {"niveau":110}):	
+	for player in db.pretre.find({"$and": [{"specialisation":"Sacre"}, {"niveau":110}]}):	
 		#Si la limite de niveau d'objet n'est pas atteinte
 		if(party['healTotilvl'] < limitHeal):
-			party['heal'].append(player)
-			party['healTotilvl'] += player["ilvl"]
+			#Verification de la presence de l'ilvl dans "player" avant l'ajout
+			if("ilvl" in player):
+				party['healTotilvl'] += player["ilvl"]
+				party['heal'].append(player)
 	
 	if(party['healTotilvl'] < limitHeal):
 		return "pas assez de heal disponible dans la DB"
@@ -208,32 +213,43 @@ def createGroup(limitTank, limitHeal, limitDps):
 	magesDPS = []
 	voleursDPS = []
 	
-	for player in db[guerrier].find({"$and": [{"specialisation":"arme"}, {"niveau":110}):
+	for player in db.guerrier.find({"$and": [{"specialisation":"arme"}, {"niveau":110}]}):
 		guerriersDPS.append(player)
 		
-	for player in db[mage].find({"niveau":110}):
+	for player in db.mage.find({"niveau":110}):
 		magesDPS.append(player)
 	
-	for player in db[voleur].find({"niveau":110}):
+	for player in db.voleur.find({"niveau":110}):
 		voleursDPS.append(player)
 	
 	while(party['dpsTotilvl'] < limitDps):
 		add = 0
 		if(len(guerriersDPS) >= add+1):
 			if(party['dpsTotilvl'] < limitDps):
-				party['dps'].append(guerriersDPS[add])
+				#Verification de la presence de l'ilvl dans "player" avant l'ajout
+				if("ilvl" in guerrierDPS[add]):
+					party['dps'].append(guerriersDPS[add])
+					party['dpsTotilvl'] += guerriersDPS[add]["ilvl"]
+
 			else:
+				#On break si plus de place en DPS
 				break
 		
 		if(len(magesDPS) >= add+1):
 			if(party['dpsTotilvl'] < limitDps):
-				party['dps'].append(magesDPS[add])
+				#Verification de la presence de l'ilvl dans "player" avant l'ajout
+				if("ilvl" in magesDPS[add]):
+					party['dps'].append(magesDPS[add])
+					party['dpsTotilvl'] += magesDPS[add]["ilvl"]
 			else:
 				break
 				
 		if(len(voleursDPS) >= add+1):
 			if(party['dpsTotilvl'] < limitDps):
-				party['dps'].append(voleursDPS[add])
+				#Verification de la presence de l'ilvl dans "player" avant l'ajout
+				if("ilvl" in voleursDPS[add]):
+					party['dps'].append(voleursDPS[add])
+					party['dpsTotilvl'] += voleursDPS[add]["ilvl"]
 			else:
 				break
 		
@@ -383,14 +399,53 @@ def populate():
 	db.voleur.update(marcus, marcus, upsert=True)
 
 if __name__ == "__main__":
+    
+    print("\n---------------------------------------------------")
+    print("Debut des tests")
+    print("---------------------------------------------------\n")
+
     print("Peuplement de la base de donnees...")
     populate()
 
-    print("Recuperation des pieces d'or...")
-    pprint.pprint(playerGoldOver(2000))
+    print("---------------------------------------------------\n")
 
-    print("Recuperation des personnages etant 'alchimiste' avec la recette 'potion de mana'...")
-    pprint.pprint(hasRecipeInJob('alchimiste','potion de mana'))
+    #Commande qui renvoit les personnages en entier (l'ensemble du dictionnaire):
+    #pprint.pprint(playerGoldOver(2000))
 
-    #print("Creation d'un groupe de 5 personnes...")
-    #pprint.pprint(findGroup5(100000.0, 0.4,0.2,0.2,0.2))
+    print("Recuperation des personnages avec plus de 2000 pieces d'or... (affichage des noms uniquement)")
+    for player in playerGoldOver(2000):
+    	print(player["nom"])
+
+    print("---------------------------------------------------\n")
+
+    #Commande qui renvoit les personnages en entier (l'ensemble du dictionnaire):
+    #pprint.pprint(hasRecipeInJob('alchimiste','potion de mana'))
+    print("Recuperation des personnages etant 'alchimiste' avec la recette 'potion de mana'... (affichage des noms uniquement)")
+    for player in hasRecipeInJob('alchimiste','potion de mana'):
+    	print(player["nom"])
+
+    print("---------------------------------------------------\n")
+
+    #Commande qui renvoit les personnages en entier (l'ensemble du dictionnaire):
+    #pprint.pprint(createGroup(800,800,1000))
+    print("Creation d'un groupe de personnes avec un niveau d'objet minimum de 800 pour les tanks, 800 pour les heals et 1000 pour les dps... (affichage des noms uniquement)")
+    newgroup = createGroup(800,800,1000)
+    print(" ")
+
+    print("Tank:")
+    print("----")
+    for tank in newgroup["tank"]:
+    	print(tank["nom"])
+    print(" ")
+
+    print("Heal:")
+    print("----")
+    for heal in newgroup["heal"]:
+    	print(heal["nom"])
+    print(" ")
+
+    print("Dps:")
+    print("----")
+    for dps in newgroup["dps"]:
+    	print(dps["nom"])
+    print(" ")
